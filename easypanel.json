@@ -1,0 +1,9 @@
+{
+  "appName": "dev-control",
+  "domain": "devcontrol.fbr.news",
+  "port": 3000,
+  "buildType": "dockerfile",
+  "healthcheck": "/",
+  "restart": "unless-stopped",
+  "envVars": "see .env.example"
+}
