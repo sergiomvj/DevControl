@@ -14,11 +14,12 @@ COPY . .
 
 # Aceitar build args do Easypanel (vars públicas usadas no build do Next.js)
 ARG NEXT_PUBLIC_APP_NAME
+ARG NODE_ENV=production
+ARG GIT_SHA
+# Vars de runtime — não usadas no build, mas declaradas para não quebrar
 ARG SUPABASE_URL
 ARG GITHUB_APP_ID
 ARG GITHUB_INSTALLATION_ID
-ARG NODE_ENV=production
-ARG GIT_SHA
 
 ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
 ENV NODE_ENV=$NODE_ENV
@@ -32,9 +33,7 @@ ENV NODE_ENV=production
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-
-# public/ só se existir
-COPY --from=builder /app/public* ./public/
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 CMD ["node", "server.js"]
