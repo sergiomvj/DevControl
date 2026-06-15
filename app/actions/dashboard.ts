@@ -88,7 +88,8 @@ export async function getDashboardData(): Promise<DashboardData> {
       projects,
       actionRequiredIssues,
       qaLoopIssues,
-      kanbanIssues
+      kanbanIssues,
+      allIssues: issues
     }
 
   } catch (error) {

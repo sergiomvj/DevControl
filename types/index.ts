@@ -48,4 +48,5 @@ export interface DashboardData {
   actionRequiredIssues: Issue[];
   qaLoopIssues: Issue[];
   kanbanIssues: Issue[];
+  allIssues: Issue[];
 }
