@@ -138,6 +138,20 @@ supabase db push
 
 ---
 
+## 🧪 Testes de Banco de Dados
+
+A infraestrutura possui uma suíte de testes unitários em SQL focada em garantir a integridade das **Views e RPCs**, executada de forma nativa pelo CLI do Supabase (utilizando a extensão `pgTAP`).
+
+Para rodar os testes de regras de negócios locais:
+
+```bash
+npx supabase test db
+```
+
+Os testes criarão transações isoladas (`BEGIN` ... `ROLLBACK`), aplicando o mock das lógicas (como o cálculo de *QA Returns* e *KPIs ativos*) sem poluir a base de desenvolvimento principal.
+
+---
+
 ## 🏗️ Stack
 
 - **Next.js 15** (App Router, standalone output)

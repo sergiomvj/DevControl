@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FBR Development Control</title>
+  <style>
+    :root {
+      --bg: #080b12;
+      --panel: #101623;
+      --panel-2: #151d2d;
+      --line: #263149;
+      --text: #eef3ff;
+      --muted: #94a3b8;
+      --blue: #4f8cff;
+      --green: #27c284;
+      --yellow: #f6c650;
+      --red: #ff5a6a;
+      --purple: #a78bfa;
+      --cyan: #22d3ee;
+      --shadow: 0 18px 60px rgba(0, 0, 0, .38);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, #17233d 0, transparent 32%), var(--bg);
+    }
+
+    .app {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 15px;
+    }
+
+    .badge {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .04);
+      color: var(--muted);
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .kpi,
+    .panel,
+    .project-card,
+    .issue {
+      background: linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .025));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .kpi {
+      padding: 18px;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .kpi .value {
+      font-size: 32px;
+      font-weight: 800;
+      margin-top: 7px;
+      letter-spacing: -0.04em;
+    }
+
+    .kpi .hint {
+      color: var(--muted);
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .filter {
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .035);
+      font-size: 13px;
+    }
+
+    .filter.active {
+      color: white;
+      border-color: rgba(79, 140, 255, .75);
+      background: rgba(79, 140, 255, .16);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.35fr .9fr;
+      gap: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0 0 12px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .projects {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .project-card {
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project-card:before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: var(--blue);
+      opacity: .9;
+    }
+
+    .project-card.risk:before {
+      background: var(--yellow);
+    }
+
+    .project-card.blocked:before {
+      background: var(--red);
+    }
+
+    .project-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .project-name {
+      font-weight: 800;
+      font-size: 17px;
+    }
+
+    .repo {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .status-pill {
+      height: 28px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(39, 194, 132, .14);
+      color: #7af0bd;
+      border: 1px solid rgba(39, 194, 132, .28);
+    }
+
+    .status-pill.warn {
+      color: #ffd978;
+      background: rgba(246, 198, 80, .12);
+      border-color: rgba(246, 198, 80, .3);
+    }
+
+    .status-pill.danger {
+      color: #ff9aa4;
+      background: rgba(255, 90, 106, .13);
+      border-color: rgba(255, 90, 106, .32);
+    }
+
+    .progress-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin: 11px 0 8px;
+    }
+
+    .bar {
+      height: 10px;
+      background: #0b1020;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      border-radius: 999px;
+    }
+
+    .fill.green {
+      background: linear-gradient(90deg, var(--green), #8fffd2);
+    }
+
+    .fill.yellow {
+      background: linear-gradient(90deg, var(--yellow), #ffe49a);
+    }
+
+    .fill.red {
+      background: linear-gradient(90deg, var(--red), #ff9aa4);
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .meta div {
+      background: rgba(255, 255, 255, .035);
+      border: 1px solid rgba(255, 255, 255, .06);
+      border-radius: 12px;
+      padding: 9px;
+    }
+
+    .meta b {
+      display: block;
+      font-size: 13px;
+    }
+
+    .meta small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .next {
+      margin-top: 12px;
+      color: #dbeafe;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .role {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: white;
+      background: rgba(167, 139, 250, .16);
+      border: 1px solid rgba(167, 139, 250, .3);
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .issues {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .issue {
+      padding: 13px;
+      box-shadow: none;
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .issue-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .issue-title {
+      font-weight: 750;
+      font-size: 14px;
+    }
+
+    .issue-desc {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-top: 8px;
+      margin-right: 5px;
+      padding: 5px 7px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .tag.red {
+      color: #ff9aa4;
+      border-color: rgba(255, 90, 106, .35);
+      background: rgba(255, 90, 106, .08);
+    }
+
+    .tag.yellow {
+      color: #ffd978;
+      border-color: rgba(246, 198, 80, .35);
+      background: rgba(246, 198, 80, .08);
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .col {
+      background: rgba(255, 255, 255, .025);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 10px;
+      min-height: 190px;
+    }
+
+    .col h3 {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .mini-card {
+      padding: 10px;
+      background: rgba(255, 255, 255, .045);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .mini-card b {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 1100px) {
+
+      .layout,
+      .projects {
+        grid-template-columns: 1fr;
+      }
+
+      .kpis {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .kanban {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .app {
+        padding: 18px;
+      }
+
+      header {
+        flex-direction: column;
+      }
+
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>FBR Development Control</h1>
+        <div class="subtitle">Painel central de execução — GitHub Issues + Projects + fluxo PO → DevMaster → Dev → QA.
+        </div>
+      </div>
+      <div class="badge">Atualizado: 03 Jun 2026 · Mock UX v1</div>
+    </header>
+
+    <section class="kpis">
+      <div class="kpi">
+        <div class="label">Projetos ativos</div>
+        <div class="value">4</div>
+        <div class="hint">2 em Dev · 1 em QA · 1 em PRD</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Sprint média</div>
+        <div class="value">64%</div>
+        <div class="hint">ponderado por peso de Issue</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Bloqueios</div>
+        <div class="value" style="color:var(--yellow)">2</div>
+        <div class="hint">1 técnico · 1 decisão PO</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Sergio precisa agir</div>
+        <div class="value" style="color:var(--red)">1</div>
+        <div class="hint">Human Interaction Required</div>
+      </div>
+    </section>
+
+    <nav class="filters">
+      <div class="filter active">Todos</div>
+      <div class="filter">Human Required</div>
+      <div class="filter">QA Loop Watch</div>
+      <div class="filter">PO Review</div>
+      <div class="filter">P0/P1</div>
+      <div class="filter">Sprint atual</div>
+    </nav>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="section-title">
+          <h2>Projetos</h2><span>visão executiva</span>
+        </div>
+        <div class="projects">
+          <article class="project-card risk">
+            <div class="project-head">
+              <div>
+                <div class="project-name">TV FaceBrasil v4</div>
+                <div class="repo">sergiomvj/tvfacebrasil-v4</div>
+              </div>
+              <div class="status-pill warn">QA</div>
+            </div>
+            <div class="progress-row">
+              <div class="bar">
+                <div class="fill yellow" style="width:72%"></div>
+              </div><strong>72%</strong>
+            </div>
+            <div class="meta">
+              <div><small>Sprint</small><b>72%</b></div>
+              <div><small>Task atual</small><b>75%</b></div>
+              <div><small>QA Returns</small><b>1/2</b></div>
+            </div>
+            <p class="next"><span class="role">QA</span> Próxima etapa: validar integração HeyGen real quando API key
+              chegar.</p>
+          </article>
+
+          <article class="project-card">
+            <div class="project-head">
+              <div>
+                <div class="project-name">OpenClaw Agents</div>
+                <div class="repo">sergiomvj/openclaw-backup</div>
+              </div>
+              <div class="status-pill">DevMaster</div>
+            </div>
+            <div class="progress-row">
+              <div class="bar">
+                <div class="fill" style="width:48%"></div>
+              </div><strong>48%</strong>
+            </div>
+            <div class="meta">
+              <div><small>Sprint</small><b>48%</b></div>
+              <div><small>Task atual</small><b>40%</b></div>
+              <div><small>QA Returns</small><b>0/2</b></div>
+            </div>
+            <p class="next"><span class="role">DevMaster</span> Próxima etapa: decompor template de segundo agente em
+              stories.</p>
+          </article>
+
+          <article class="project-card blocked">
+            <div class="project-head">
+              <div>
+                <div class="project-name">Pipeline Reports</div>
+                <div class="repo">sergiomvj/pipeline-reports</div>
+              </div>
+              <div class="status-pill danger">Human Required</div>
+            </div>
+            <div class="progress-row">
+              <div class="bar">
+                <div class="fill red" style="width:35%"></div>
+              </div><strong>35%</strong>
+            </div>
+            <div class="meta">
+              <div><small>Sprint</small><b>35%</b></div>
+              <div><small>Task atual</small><b>35%</b></div>
+              <div><small>QA Returns</small><b>2/2</b></div>
+            </div>
+            <p class="next"><span class="role">Sergio</span> Próxima etapa: decisão humana sobre DNS/upload service.</p>
+          </article>
+
+          <article class="project-card">
+            <div class="project-head">
+              <div>
+                <div class="project-name">FBR Dev System</div>
+                <div class="repo">workspace/skills/dev-system</div>
+              </div>
+              <div class="status-pill">PO Review</div>
+            </div>
+            <div class="progress-row">
+              <div class="bar">
+                <div class="fill green" style="width:90%"></div>
+              </div><strong>90%</strong>
+            </div>
+            <div class="meta">
+              <div><small>Sprint</small><b>90%</b></div>
+              <div><small>Task atual</small><b>90%</b></div>
+              <div><small>QA Returns</small><b>0/2</b></div>
+            </div>
+            <p class="next"><span class="role">PO</span> Próxima etapa: validar processo e criar GitHub Project central.
+            </p>
+          </article>
+        </div>
+
+        <div class="kanban">
+          <div class="col">
+            <h3>PRD</h3>
+            <div class="mini-card"><b>Auth por agente</b>PRD Issue aguardando validação</div>
+          </div>
+          <div class="col">
+            <h3>DevMaster</h3>
+            <div class="mini-card"><b>Segundo agente</b>Arquitetura e stories</div>
+          </div>
+          <div class="col">
+            <h3>Dev</h3>
+            <div class="mini-card"><b>Dashboard JSON</b>Script GitHub App</div>
+          </div>
+          <div class="col">
+            <h3>QA</h3>
+            <div class="mini-card"><b>TV FaceBrasil</b>Mock passou; falta API real</div>
+          </div>
+          <div class="col">
+            <h3>Human</h3>
+            <div class="mini-card"><b>DNS Upload</b>Decisão/validação Sergio</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="section-title">
+          <h2>Sergio precisa agir</h2><span>sem ruído</span>
+        </div>
+        <div class="issues">
+          <div class="issue">
+            <div class="issue-top">
+              <div class="issue-title">#42 Validar DNS upload.pipeline.fbr.news</div>
+              <div class="tag red">Human</div>
+            </div>
+            <div class="issue-desc">QA retornou 2 vezes. PO não consegue resolver sem validação externa. Precisa
+              confirmar DNS/Cloudflare.</div>
+            <span class="tag">Pipeline Reports</span><span class="tag red">QA 2/2</span><span class="tag">P1</span>
+          </div>
+        </div>
+
+        <div style="height:18px"></div>
+        <div class="section-title">
+          <h2>QA Loop Watch</h2><span>evita loops</span>
+        </div>
+        <div class="issues">
+          <div class="issue">
+            <div class="issue-top">
+              <div class="issue-title">#18 HeyGen production mode</div>
+              <div class="tag yellow">QA 1/2</div>
+            </div>
+            <div class="issue-desc">Aguardando API keys reais. Próximo retorno ao Dev ainda permitido.</div>
+            <span class="tag">TV FaceBrasil</span><span class="tag">QA</span>
+          </div>
+          <div class="issue">
+            <div class="issue-top">
+              <div class="issue-title">#27 GitHub Project fields</div>
+              <div class="tag">PO Review</div>
+            </div>
+            <div class="issue-desc">Campos definidos; próximo passo é criar Project real no GitHub.</div>
+            <span class="tag">Dev System</span><span class="tag">P2</span>
+          </div>
+        </div>
+
+        <div style="height:18px"></div>
+        <div class="section-title">
+          <h2>Melhorias UX</h2><span>recomendadas</span>
+        </div>
+        <div class="issues">
+          <div class="issue">
+            <div class="issue-title">Next action obrigatório</div>
+            <div class="issue-desc">Todo card mostra o próximo movimento, não só status.</div>
+          </div>
+          <div class="issue">
+            <div class="issue-title">Painel “Sergio precisa agir”</div>
+            <div class="issue-desc">Separado do restante para reduzir ruído e interrupções.</div>
+          </div>
+          <div class="issue">
+            <div class="issue-title">QA returns visível</div>
+            <div class="issue-desc">Contador 0/2, 1/2, 2/2 impede loop infinito.</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <div class="footer-note">V1 sugerida: GitHub Project central + script GitHub App gerando JSON + dashboard HTML. V2:
+      dashboard Node.js autenticado em tempo real.</div>
+  </div>
+</body>
+
+</html>
